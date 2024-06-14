@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import ClassSchedule from './components/ClassSchedule';
+import DailySchedule from './components/DailySchedule';
 import Profile from './components/Profile';
 import Users from './components/Users';
 import './App.css';
@@ -32,6 +33,10 @@ const App = () => {
                     <Link className="nav-link" to="/schedule">Schedule</Link>
                   </li>
                   <li className="nav-item">
+                    <Link className="nav-link" to="/daily">Daily Schedule</Link>
+                  </li>
+                  <li ></li>
+                  <li className="nav-item">
                     <Link className="nav-link" to="/profile">Profile</Link>
                   </li>
                   <li className="nav-item">
@@ -49,6 +54,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login setUser={setUser} />} />
           <Route path="/schedule" element={<ClassSchedule user={user} />} />
+          <Route path="/daily" element={<DailySchedule user={user} />} />
           <Route path="/profile" element={<Profile user={user} />} />
           <Route path="/users" element={<Users />} />
         </Routes>

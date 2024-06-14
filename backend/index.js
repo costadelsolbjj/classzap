@@ -80,6 +80,21 @@ async function main() {
       res.send(week);
     });
 
+ // Endpoint to get the schedule for a specific day
+ app.get('/api/weeks/day/:date', async (req, res) => {
+  const { date } = req.params;
+  const result = await weeksCollection.aggregate([
+    { $unwind: "$days" },
+    { $match: { "days.date": date } },
+    { $project: { _id: 0, dayOfWeek: "$days.dayOfWeek", date: "$days.date", classes: "$days.classes" } }
+  ]).toArray();
+  if (result.length > 0) {
+    res.send(result[0]);
+  } else {
+    res.status(404).send({ message: 'Schedule not found for this date' });
+  }
+});
+
     // Endpoint to handle login
     app.post('/api/login', async (req, res) => {
       const { email, password } = req.body;
