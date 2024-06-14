@@ -1,5 +1,5 @@
-require('dotenv').config(); // Load environment variables first
-const { MongoClient } = require('mongodb');
+require('dotenv').config(); // Load environment variables
+const { MongoClient, ObjectId } = require('mongodb'); // Ensure ObjectId is imported
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -13,68 +13,101 @@ if (!uri) {
   console.error('COSMOSDB_URI is not defined. Please check your .env file.');
   process.exit(1);
 }
-
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-let classes = [
-  { id: 1, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Monday', students: [] },
-  { id: 2, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Tuesday', students: [] },
-  { id: 3, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Wednesday', students: [] },
-  { id: 4, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Thursday', students: [] },
-  { id: 5, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Friday', students: [] },
-  { id: 6, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Saturday', students: [] },
-  { id: 7, name: 'Jiu-Jitsu Gi', time: '06:00', day: 'Sunday', students: [] },
-];
+console.log('uri:', uri);
 
 let sessions = {};
 
-client.connect(err => {
-  if (err) {
-    console.error(err);
+async function main() {
+  const client = new MongoClient(uri);
+
+  try {
+    await client.connect();
+    console.log("Connected successfully to server");
+
+    const db = client.db('classzapdb');
+    const weeksCollection = db.collection('weeks');
+    const usersCollection = db.collection('users');
+
+    // Endpoint to create a new week
+    app.post('/api/weeks', async (req, res) => {
+      const newWeek = req.body;
+      const result = await weeksCollection.insertOne(newWeek);
+      res.status(201).send(result.ops[0]);
+    });
+
+    // Endpoint to add a class to a specific day
+    app.post('/api/weeks/:weekId/days/:dayOfWeek/classes', async (req, res) => {
+      const { weekId, dayOfWeek } = req.params;
+      const newClass = req.body;
+      const result = await weeksCollection.updateOne(
+        { _id: new ObjectId(weekId), "days.dayOfWeek": dayOfWeek },
+        { $push: { "days.$.classes": newClass } }
+      );
+      res.send(result);
+    });
+
+    // Endpoint to register a student to a class
+    app.post('/api/weeks/:weekId/days/:dayOfWeek/classes/:classTime/register', async (req, res) => {
+      const { weekId, dayOfWeek, classTime } = req.params;
+      const { studentName } = req.body;
+      const result = await weeksCollection.updateOne(
+        { _id: new ObjectId(weekId), "days.dayOfWeek": dayOfWeek, "days.classes.time": classTime },
+        { $push: { "days.$.classes.$[class].students": studentName } },
+        { arrayFilters: [{ "class.time": classTime }] }
+      );
+      const updatedWeek = await weeksCollection.findOne({ _id: new ObjectId(weekId) });
+      res.send(updatedWeek.days.find(day => day.dayOfWeek === dayOfWeek).classes.find(cls => cls.time === classTime));
+    });
+
+    // Endpoint to remove a student from a class
+    app.post('/api/weeks/:weekId/days/:dayOfWeek/classes/:classTime/remove', async (req, res) => {
+      const { weekId, dayOfWeek, classTime } = req.params;
+      const { studentName } = req.body;
+      const result = await weeksCollection.updateOne(
+        { _id: new ObjectId(weekId), "days.dayOfWeek": dayOfWeek, "days.classes.time": classTime },
+        { $pull: { "days.$.classes.$[class].students": studentName } },
+        { arrayFilters: [{ "class.time": classTime }] }
+      );
+      const updatedWeek = await weeksCollection.findOne({ _id: new ObjectId(weekId) });
+      res.send(updatedWeek.days.find(day => day.dayOfWeek === dayOfWeek).classes.find(cls => cls.time === classTime));
+    });
+
+    // Endpoint to get the week schedule by weekStartDate
+    app.get('/api/weeks/start/:weekStartDate', async (req, res) => {
+      const { weekStartDate } = req.params;
+      const week = await weeksCollection.findOne({ weekStartDate: weekStartDate });
+      console.log('Week Schedule:', week); // Log the result
+      res.send(week);
+    });
+
+    // Endpoint to handle login
+    app.post('/api/login', async (req, res) => {
+      const { email, password } = req.body;
+      const user = await usersCollection.findOne({ email, password });
+      if (user) {
+        const sessionId = Date.now().toString();
+        sessions[sessionId] = user;
+        res.send({ sessionId, user });
+      } else {
+        res.status(401).send({ message: 'Invalid credentials' });
+      }
+    });
+
+    // Endpoint to get users
+    app.get('/api/users', async (req, res) => {
+      const users = await usersCollection.find({}).toArray();
+      const allUsers = users.map(user => ({ email: user.email, name: user.name }));
+      res.send(allUsers);
+    });
+
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (e) {
+    console.error(e);
     process.exit(1);
   }
+}
 
-  const db = client.db('classzapdb');
-  const usersCollection = db.collection('users');
-
-  app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
-    const user = await usersCollection.findOne({ email, password });
-    if (user) {
-      const sessionId = Date.now().toString();
-      sessions[sessionId] = user;
-      res.send({ sessionId, user });
-    } else {
-      res.status(401).send({ message: 'Invalid credentials' });
-    }
-  });
-
-  app.get('/api/classes', (req, res) => {
-    res.send(classes);
-  });
-
-  app.post('/api/classes/:id/register', (req, res) => {
-    const classId = parseInt(req.params.id);
-    const student = req.body.studentName;
-    const cls = classes.find(c => c.id === classId);
-    if (cls) {
-      if (!cls.students.includes(student)) {
-        cls.students.push(student);
-      }
-      res.send(cls);
-    } else {
-      res.status(404).send({ message: 'Class not found' });
-    }
-  });
-
-  app.get('/api/users', async (req, res) => {
-    const users = await usersCollection.find({}).toArray();
-    const allUsers = users.map(user => ({ email: user.email, name: user.name }));
-    res.send(allUsers);
-  });
-
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-});
+main().catch(console.error);
