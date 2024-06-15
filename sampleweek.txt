@@ -1,0 +1,67 @@
+{
+	
+	"weekStartDate" : "2024-06-03",
+	"weekNumber" : 1,
+	"month" : 6,
+	"year" : 2024,
+	"days" : [
+		{
+			"dayOfWeek" : "Monday",
+			"date" : "2024-06-03",
+			"classes" : [
+				{
+					"title" : "Jiu-Jitsu Gi",
+					"time" : "06:00",
+					"students" : [ ]
+				},
+				{
+					"title" : "Yoga",
+					"time" : "10:00",
+					"students" : [
+						"Michael"
+					]
+				}
+			]
+		},
+		{
+			"dayOfWeek" : "Tuesday",
+			"date" : "2024-06-04",
+			"classes" : [
+				{
+					"title" : "Jiu-Jitsu Gi",
+					"time" : "06:00",
+					"students" : [ ]
+				}
+			]
+		},
+		{
+			"dayOfWeek" : "Wednesday",
+			"date" : "2024-06-05",
+			"classes" : [
+				{
+					"title" : "Jiu-Jitsu Gi",
+					"time" : "06:00",
+					"students" : [ ]
+				}
+			]
+		},
+		{
+			"dayOfWeek" : "Thursday",
+			"date" : "2024-06-06",
+			"classes" : [ ]
+		},
+		{
+			"dayOfWeek" : "Friday",
+			"date" : "2024-06-07",
+			"classes" : [
+				{
+					"title" : "Jiu-Jitsu Gi",
+					"time" : "06:00",
+					"students" : [
+						"Michael"
+					]
+				}
+			]
+		}
+	]
+}

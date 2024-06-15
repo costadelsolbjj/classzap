@@ -28,12 +28,19 @@ async function main() {
     const weeksCollection = db.collection('weeks');
     const usersCollection = db.collection('users');
 
+    
     // Endpoint to create a new week
     app.post('/api/weeks', async (req, res) => {
       const newWeek = req.body;
-      const result = await weeksCollection.insertOne(newWeek);
-      res.status(201).send(result.ops[0]);
+      try {
+        const result = await weeksCollection.insertOne(newWeek);
+        res.status(201).send({ insertedId: result.insertedId, ...newWeek });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Failed to create the week" });
+      }
     });
+
 
     // Endpoint to add a class to a specific day
     app.post('/api/weeks/:weekId/days/:dayOfWeek/classes', async (req, res) => {
@@ -80,20 +87,20 @@ async function main() {
       res.send(week);
     });
 
- // Endpoint to get the schedule for a specific day
- app.get('/api/weeks/day/:date', async (req, res) => {
-  const { date } = req.params;
-  const result = await weeksCollection.aggregate([
-    { $unwind: "$days" },
-    { $match: { "days.date": date } },
-    { $project: { _id: 0, dayOfWeek: "$days.dayOfWeek", date: "$days.date", classes: "$days.classes" } }
-  ]).toArray();
-  if (result.length > 0) {
-    res.send(result[0]);
-  } else {
-    res.status(404).send({ message: 'Schedule not found for this date' });
-  }
-});
+    // Endpoint to get the schedule for a specific day
+    app.get('/api/weeks/day/:date', async (req, res) => {
+      const { date } = req.params;
+      const result = await weeksCollection.aggregate([
+        { $unwind: "$days" },
+        { $match: { "days.date": date } },
+        { $project: { _id: 0, dayOfWeek: "$days.dayOfWeek", date: "$days.date", classes: "$days.classes" } }
+      ]).toArray();
+      if (result.length > 0) {
+        res.send(result[0]);
+      } else {
+        res.status(404).send({ message: 'Schedule not found for this date' });
+      }
+    });
 
     // Endpoint to handle login
     app.post('/api/login', async (req, res) => {
@@ -116,24 +123,34 @@ async function main() {
     });
 
     // Endpoint to create a user
-app.post('/api/users', async (req, res) => {
-  try {
-    // Assuming req.body contains the user data (e.g., { email: "...", name: "..." })
-    const newUser = req.body;
-    
-    // Validate newUser data here (optional)
-    
-    // Insert the new user into the database
-    const result = await usersCollection.insertOne(newUser);
-    
-    // Respond with the inserted user
-    // Including the generated _id from MongoDB
-    res.status(201).send({ id: result.insertedId, ...newUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: "Failed to create the user" });
-  }
-});
+    app.post('/api/users', async (req, res) => {
+      try {
+        const newUser = req.body;
+        const result = await usersCollection.insertOne(newUser);
+        res.status(201).send({ id: result.insertedId, ...newUser });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Failed to create the user" });
+      }
+    });
+
+    // Endpoint to delete a user
+    app.delete('/api/users/:email', async (req, res) => {
+      const { email } = req.params;
+      const result = await usersCollection.deleteOne({ email });
+      res.send(result);
+    });
+
+    // Endpoint to update a user
+    app.put('/api/users/:email', async (req, res) => {
+      const { email } = req.params;
+      const { name, newEmail } = req.body;
+      const result = await usersCollection.updateOne(
+        { email },
+        { $set: { name, email: newEmail } }
+      );
+      res.send(result);
+    });
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {

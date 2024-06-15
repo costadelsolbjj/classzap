@@ -5,8 +5,8 @@ import ClassSchedule from './components/ClassSchedule';
 import DailySchedule from './components/DailySchedule';
 import Profile from './components/Profile';
 import Users from './components/Users';
-import CreateUser from './components/CreateUser'; // Import CreateUser component
-
+import CreateUser from './components/CreateUser';
+import CreateWeek from './components/CreateWeek';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -39,12 +39,19 @@ const App = () => {
                   <li className="nav-item">
                     <Link className="nav-link" to="/profile">Profile</Link>
                   </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/users">Users</Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/create-user">Create User</Link> 
-                  </li>
+                  {user.email === 'Douglas@outlook.com' && (
+                    <>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/users">Users</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/create-user">Create User</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/create-week">Create Week</Link>
+                      </li>
+                    </>
+                  )}
                   <li className="nav-item">
                     <button className="btn btn-link nav-link" onClick={handleLogout}>Logout</button>
                   </li>
@@ -59,8 +66,9 @@ const App = () => {
           <Route path="/schedule" element={<ClassSchedule user={user} />} />
           <Route path="/daily" element={<DailySchedule user={user} />} />
           <Route path="/profile" element={<Profile user={user} />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/create-user" element={<CreateUser  user={user}/>} /> 
+          <Route path="/users" element={user?.email === 'Douglas@outlook.com' ? <Users /> : <p>Access Denied</p>} />
+          <Route path="/create-user" element={user?.email === 'Douglas@outlook.com' ? <CreateUser /> : <p>Access Denied</p>} />
+          <Route path="/create-week" element={user?.email === 'Douglas@outlook.com' ? <CreateWeek user={user} /> : <p>Access Denied</p>} />
         </Routes>
       </div>
     </Router>
