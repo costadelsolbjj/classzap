@@ -19,6 +19,19 @@ To run this project, you need to have the following installed:
 - npm (>=6.x.x)
 - MongoDB (>=4.x.x)
 
+**-Backend**
+express
+dotenv
+mongodb
+body-parser
+cors
+**Frontend**
+react-big-calendar
+moment
+axios
+react-router-dom
+react-icons
+
 ## Environment Variables
 
 The application requires the following environment variables. Create a `.env` file in the root of your project and add the following:
