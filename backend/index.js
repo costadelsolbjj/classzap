@@ -53,6 +53,21 @@ async function main() {
       res.send(result);
     });
 
+    // Endpoint to get all data by specific day
+    app.get('/api/days/:date', async (req, res) => {
+      const { date } = req.params;
+      try {
+        const day = await daysCollection.findOne({ date });
+        if (day) {
+          res.status(200).json(day);
+        } else {
+          res.status(404).json({ message: 'Day not found' });
+        }
+      } catch (err) {
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    });
+
     // Endpoint to register a student to a class
     app.post('/api/weeks/:weekId/days/:dayOfWeek/classes/:classTime/register', async (req, res) => {
       const { weekId, dayOfWeek, classTime } = req.params;

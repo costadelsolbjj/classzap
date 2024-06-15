@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaPlus, FaTimes } from 'react-icons/fa';
-import { format, addDays, subDays } from 'date-fns';
+import moment from 'moment';
+import { FaPlus, FaTimes, FaArrowLeft, FaArrowRight, FaPlusCircle } from 'react-icons/fa';
 
 const DailySchedule = ({ user }) => {
   const [daySchedule, setDaySchedule] = useState({});
-  const [currentDate, setCurrentDate] = useState(new Date('2024-06-03'));
   const [loading, setLoading] = useState(false);
+  const [currentDate, setCurrentDate] = useState(moment().startOf('day'));
+  const [newClass, setNewClass] = useState({ title: '', time: '' });
 
   const API_URL = process.env.REACT_APP_API_URL;
 
@@ -15,9 +16,8 @@ const DailySchedule = ({ user }) => {
   }, [currentDate]);
 
   const fetchDaySchedule = (date) => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
     setLoading(true);
-    axios.get(`${API_URL}/api/weeks/day/${formattedDate}`)
+    axios.get(`${API_URL}/api/days/${date.format('YYYY-MM-DD')}`)
       .then(response => {
         console.log('Day Schedule:', response.data); // Log the response data
         setDaySchedule(response.data);
@@ -28,42 +28,58 @@ const DailySchedule = ({ user }) => {
 
   const handleAddStudent = (classTime) => {
     if (user && user.name) {
-      setLoading(true);
-      axios.post(`${API_URL}/api/weeks/day/${format(currentDate, 'yyyy-MM-dd')}/classes/${classTime}/register`, { studentName: user.name })
+      setLoading(true); // Show loading state
+      axios.post(`${API_URL}/api/days/${currentDate.format('YYYY-MM-DD')}/classes/${classTime}/register`, { studentName: user.name })
         .then(response => {
-          setDaySchedule(prevDay => {
-            const updatedClasses = prevDay.classes.map(cls => 
-              cls.time === classTime ? { ...cls, students: [...cls.students, user.name] } : cls
-            );
-            return { ...prevDay, classes: updatedClasses };
-          });
+          setDaySchedule(prevDay => ({
+            ...prevDay,
+            classes: prevDay.classes.map(cls => 
+              cls.time === classTime ? response.data : cls
+            )
+          }));
         })
         .catch(error => console.error(error))
-        .finally(() => setLoading(false));
+        .finally(() => setLoading(false)); // Hide loading state
     }
   };
 
   const handleRemoveStudent = (classTime, studentName) => {
-    setLoading(true);
-    axios.post(`${API_URL}/api/weeks/day/${format(currentDate, 'yyyy-MM-dd')}/classes/${classTime}/remove`, { studentName })
+    setLoading(true); // Show loading state
+    axios.post(`${API_URL}/api/days/${currentDate.format('YYYY-MM-DD')}/classes/${classTime}/remove`, { studentName })
       .then(response => {
-        setDaySchedule(prevDay => {
-          const updatedClasses = prevDay.classes.map(cls => 
-            cls.time === classTime ? { ...cls, students: cls.students.filter(student => student !== studentName) } : cls
-          );
-          return { ...prevDay, classes: updatedClasses };
-        });
+        setDaySchedule(prevDay => ({
+          ...prevDay,
+          classes: prevDay.classes.map(cls => 
+            cls.time === classTime ? response.data : cls
+          )
+        }));
       })
       .catch(error => console.error(error))
-      .finally(() => setLoading(false));
+      .finally(() => setLoading(false)); // Hide loading state
   };
 
   const handlePreviousDay = () => {
-    setCurrentDate(prevDate => subDays(prevDate, 1));
+    setCurrentDate(prevDate => prevDate.clone().subtract(1, 'day'));
   };
 
   const handleNextDay = () => {
-    setCurrentDate(prevDate => addDays(prevDate, 1));
+    setCurrentDate(prevDate => prevDate.clone().add(1, 'day'));
+  };
+
+  const handleAddClass = () => {
+    if (!newClass.title || !newClass.time) return;
+
+    const newClassData = { title: newClass.title, time: newClass.time, students: [] };
+
+    axios.post(`${API_URL}/api/days/${currentDate.format('YYYY-MM-DD')}/classes`, newClassData)
+      .then(response => {
+        setDaySchedule(prevDay => ({
+          ...prevDay,
+          classes: [...prevDay.classes, response.data]
+        }));
+        setNewClass({ title: '', time: '' });
+      })
+      .catch(error => console.error(error));
   };
 
   if (!user) {
@@ -72,27 +88,61 @@ const DailySchedule = ({ user }) => {
 
   return (
     <div className="container">
-      <h1>Class Schedule for {format(currentDate, 'yyyy-MM-dd')}</h1>
-      <button onClick={handlePreviousDay} className="btn btn-secondary">Previous Day</button>
-      <button onClick={handleNextDay} className="btn btn-secondary">Next Day</button>
+      <h1>Daily Schedule</h1>
       {loading && <p>Loading...</p>}
-      <div className="row">
+      <div className="day-navigation">
+        <button onClick={handlePreviousDay} className="btn btn-navigation">
+          <FaArrowLeft /> Previous Day
+        </button>
+        <span className="day-date">{currentDate.format('MMMM Do YYYY')}</span>
+        <button onClick={handleNextDay} className="btn btn-navigation">
+          Next Day <FaArrowRight />
+        </button>
+      </div>
+      <div className="day-schedule">
+        <h2 className="day-header">
+          {currentDate.format('dddd')} 
+          <FaPlusCircle 
+            onClick={() => setNewClass({ title: '', time: '' })} 
+            style={{ cursor: 'pointer', color: '#FF6600', marginLeft: '10px' }} 
+          />
+        </h2>
+        {newClass && (
+          <div className="new-class-form">
+            <input 
+              type="text" 
+              placeholder="Class Title" 
+              value={newClass.title}
+              onChange={(e) => setNewClass({ ...newClass, title: e.target.value })}
+            />
+            <input 
+              type="time" 
+              placeholder="Class Time" 
+              value={newClass.time}
+              onChange={(e) => setNewClass({ ...newClass, time: e.target.value })}
+            />
+            <button onClick={handleAddClass}>Add Class</button>
+          </div>
+        )}
         {daySchedule.classes && daySchedule.classes.length > 0 ? (
           daySchedule.classes.map((cls, index) => (
-            <div key={index} className="col-sm-12 col-md-6 col-lg-4">
-              <div className="class-card">
-                <p>{cls.title} - {cls.time}</p>
-                <FaPlus onClick={() => handleAddStudent(cls.time)} style={{ cursor: 'pointer' }} />
-                {cls.students.map((student, idx) => (
-                  <div key={idx} className="student-box">
-                    {student}
-                    <FaTimes 
-                      onClick={() => handleRemoveStudent(cls.time, student)} 
-                      style={{ cursor: 'pointer', marginLeft: '10px' }} 
-                    />
-                  </div>
-                ))}
-              </div>
+            <div key={index} className="class-item">
+              <p className="class-subheader">
+                {cls.title} - {cls.time} 
+                <FaPlus 
+                  onClick={() => handleAddStudent(cls.time)} 
+                  style={{ cursor: 'pointer', color: '#FF6600', marginLeft: '10px' }} 
+                />
+              </p>
+              {cls.students.map((student, idx) => (
+                <div key={idx} className="student-box">
+                  {student}
+                  <FaTimes 
+                    onClick={() => handleRemoveStudent(cls.time, student)} 
+                    style={{ cursor: 'pointer', color: '#FF6600', marginLeft: '10px' }} 
+                  />
+                </div>
+              ))}
             </div>
           ))
         ) : (
