@@ -1,70 +1,116 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# ClassZap
 
-## Available Scripts
+ClassZap is a scheduling application designed to manage class schedules and student registrations. This application includes features like creating weekly schedules, registering students to classes, and viewing daily schedules.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- Add classes by title, day, and hour.
+- View and register users to classes.
+- Allow users to register for classes.
+- Allow admin to register users.
+- Only admin can add weekly schedules and classes.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Requirements
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+To run this project, you need to have the following installed:
 
-### `npm test`
+- Node.js (>=14.x.x)
+- npm (>=6.x.x)
+- MongoDB (>=4.x.x)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Environment Variables
 
-### `npm run build`
+The application requires the following environment variables. Create a `.env` file in the root of your project and add the following:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+COSMOSDB_URI=<your_cosmosdb_uri>
+PORT=<your_port>
+REACT_APP_API_URL=<your_api_url>
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. **Clone the repository:**
 
-### `npm run eject`
+   ```bash
+   git clone https://github.com/yourusername/classzap.git
+   cd classzap
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. **Install dependencies:**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+   ```bash
+   npm install
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. **Set up MongoDB:**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   Ensure MongoDB is running and the connection URI is added to your `.env` file.
 
-## Learn More
+4. **Run the Node Express API:**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   ```bash
+   cd backend
+   node index.js
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. **Run the frontend application:**
 
-### Code Splitting
+   ```bash
+   cd frontend
+   npm start
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Project Structure
 
-### Analyzing the Bundle Size
+```
+classzap/
+├── backend/
+│   ├── index.js
+│   └── ...
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── CalendarComponent.js
+│   │   │   ├── CreateWeek.js
+│   │   │   ├── ...
+│   │   ├── App.js
+│   │   └── ...
+│   ├── public/
+│   └── ...
+├── .env
+├── package.json
+└── README.md
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Features
 
-### Making a Progressive Web App
+1. **Add Classes by Title, Day, and Hour:**
+   - Admin can add classes specifying the title, day, and hour.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+2. **View and Register Users to Classes:**
+   - Users can view available classes and register themselves.
+   - Admin can view and register any user to classes.
 
-### Advanced Configuration
+3. **Allow Users to Register for Classes:**
+   - Users can self-register for available classes through the application.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+4. **Allow Admin to Register Users:**
+   - Admin has the privilege to register any user to classes and manage user registrations.
 
-### Deployment
+5. **Only Admin Can Add Weekly Schedules and Classes:**
+   - Admins have exclusive rights to create and manage weekly schedules and class entries.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Contributing
 
-### `npm run build` fails to minify
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add new feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Open a pull request.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
