@@ -20,17 +20,18 @@ To run this project, you need to have the following installed:
 - MongoDB (>=4.x.x)
 
 **-Backend**
-express
-dotenv
-mongodb
-body-parser
-cors
-**Frontend**
-react-big-calendar
-moment
-axios
-react-router-dom
-react-icons
+- express
+- dotenv
+- mongodb
+- body-parser
+- cors
+  
+**-Frontend**
+- react-big-calendar
+- moment
+- axios
+- react-router-dom
+- react-icons
 
 ## Environment Variables
 
