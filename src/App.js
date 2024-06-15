@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Login from './components/Login';
 import ClassSchedule from './components/ClassSchedule';
 import DailySchedule from './components/DailySchedule';
 import Profile from './components/Profile';
 import Users from './components/Users';
-import './App.css';
+import CreateUser from './components/CreateUser'; // Import CreateUser component
+
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -35,12 +36,14 @@ const App = () => {
                   <li className="nav-item">
                     <Link className="nav-link" to="/daily">Daily Schedule</Link>
                   </li>
-                  <li ></li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/profile">Profile</Link>
                   </li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/users">Users</Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/create-user">Create User</Link> 
                   </li>
                   <li className="nav-item">
                     <button className="btn btn-link nav-link" onClick={handleLogout}>Logout</button>
@@ -57,6 +60,7 @@ const App = () => {
           <Route path="/daily" element={<DailySchedule user={user} />} />
           <Route path="/profile" element={<Profile user={user} />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/create-user" element={<CreateUser  user={user}/>} /> 
         </Routes>
       </div>
     </Router>

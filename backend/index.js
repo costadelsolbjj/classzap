@@ -115,6 +115,26 @@ async function main() {
       res.send(allUsers);
     });
 
+    // Endpoint to create a user
+app.post('/api/users', async (req, res) => {
+  try {
+    // Assuming req.body contains the user data (e.g., { email: "...", name: "..." })
+    const newUser = req.body;
+    
+    // Validate newUser data here (optional)
+    
+    // Insert the new user into the database
+    const result = await usersCollection.insertOne(newUser);
+    
+    // Respond with the inserted user
+    // Including the generated _id from MongoDB
+    res.status(201).send({ id: result.insertedId, ...newUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to create the user" });
+  }
+});
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
